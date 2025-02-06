@@ -1,7 +1,8 @@
 import json
 import requests
 
-from geopy import distance
+from geopy.distance import distance
+import folium
 
 from pprint import pprint
 
@@ -30,24 +31,48 @@ def fetch_coordinates(apikey, address):
     return lon, lat
 
 
+# with open("coffee.json", "r", encoding="CP1251") as coffee:
+#     file_contents = coffee.read()
+# coffeeshops = json.loads(file_contents)
+# # first_coffee = coffeeshops[0]
+# list_coffeshops = []
+# question = input("Где вы находитесь?: ")
+# coords = fetch_coordinates(apikey, "Красная площадь")
+# print(coords)
+# print(question)
+# for our_coffee in coffeeshops:
+#     name_first_coffee = our_coffee["Name"]
+#     coordinates = our_coffee["geoData"]["coordinates"]
+#     dist = distance(coords[::-1], coordinates[::-1]).km
+#     print("Ваши координаты", coordinates)
+#     # pprint(our_coffee)
+
+#     caffee = {"name": name_first_coffee, "distance": dist, "coord": coordinates}
+
+#     list_coffeshops.append(caffee)
+# pprint(list_coffeshops)
+# print("Расстояние : ", distance(coords, coordinates), "km")
+
+
 with open("coffee.json", "r", encoding="CP1251") as coffee:
     file_contents = coffee.read()
 coffeeshops = json.loads(file_contents)
-# first_coffee = coffeeshops[0]
-for our_coffee in coffeeshops:
-    question = input("Где вы находитесь?: ")
-    name_first_coffee = our_coffee["Name"]
-    coordinates = our_coffee["geoData"]["coordinates"]
-    distance = distance.distance(question, our_coffee)
-    print("Ваши координаты", coordinates)
-    # pprint(our_coffee)
+# coffeeshops_d = coffeeshops[0:5]
+list_coffeshops = []
+question = input("Где вы находитесь?: ")
+coords = fetch_coordinates(apikey, question)
+nearest_coffee = min(
+    coffeeshops,
+    key=lambda coffee: distance(
+        coords[::-1], coffee["geoData"]["coordinates"][::-1]
+    ).km,
+)
 
-    caffee = {
-        "name": name_first_coffee,
-        "distance": distance,
-        "coord": coordinates,
-    }
 
-    coffeeshops.append(caffee)
-
-    print("Расстояние : ", distance.distance(question, our_coffee).km)
+min_distance = distance(coords[::-1], nearest_coffee["geoData"]["coordinates"][::-1]).km
+print(coords)
+print("distance: ", min_distance)
+pprint(nearest_coffee["Name"])
+pprint(nearest_coffee["Longitude_WGS84"])
+pprint(nearest_coffee["Latitude_WGS84"])
+pprint(coffeeshops)
