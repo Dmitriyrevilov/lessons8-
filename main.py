@@ -4,10 +4,8 @@ import requests
 from geopy.distance import distance
 import folium
 
-from pprint import pprint
-
-
-apikey = "6104f5f0-5fed-4b3f-9007-36072e3b49f9"  # ваш ключ
+import os
+from dotenv import load_dotenv
 
 
 def fetch_coordinates(apikey, address):
@@ -31,48 +29,36 @@ def fetch_coordinates(apikey, address):
     return lon, lat
 
 
-# with open("coffee.json", "r", encoding="CP1251") as coffee:
-#     file_contents = coffee.read()
-# coffeeshops = json.loads(file_contents)
-# # first_coffee = coffeeshops[0]
-# list_coffeshops = []
-# question = input("Где вы находитесь?: ")
-# coords = fetch_coordinates(apikey, "Красная площадь")
-# print(coords)
-# print(question)
-# for our_coffee in coffeeshops:
-#     name_first_coffee = our_coffee["Name"]
-#     coordinates = our_coffee["geoData"]["coordinates"]
-#     dist = distance(coords[::-1], coordinates[::-1]).km
-#     print("Ваши координаты", coordinates)
-#     # pprint(our_coffee)
+def main():
+    load_dotenv()
+    APIKEY = os.getenv("APIKEY")
+    with open("coffee.json", "r", encoding="CP1251") as coffee:
+        file_contents = coffee.read()
+    coffeeshops = json.loads(file_contents)
+    question = input("Где вы находитесь?: ")
+    coords = fetch_coordinates(APIKEY, question)
 
-#     caffee = {"name": name_first_coffee, "distance": dist, "coord": coordinates}
+    m = folium.Map(location=coords[::-1], zoom_start=12)
 
-#     list_coffeshops.append(caffee)
-# pprint(list_coffeshops)
-# print("Расстояние : ", distance(coords, coordinates), "km")
+    nearest_coffee = sorted(
+        coffeeshops,
+        key=lambda coffee: distance(
+            coords[::-1], coffee["geoData"]["coordinates"][::-1]
+        ).km,
+    )[:5]
 
+    for coffee in nearest_coffee:
+        name = coffee["Name"]
+        lon, lat = coffee["geoData"]["coordinates"]
+        folium.Marker(
+            location=[lat, lon],
+            tooltip="Click me!",
+            popup=name,
+            icon=folium.Icon(icon="cloud"),
+        ).add_to(m)
 
-with open("coffee.json", "r", encoding="CP1251") as coffee:
-    file_contents = coffee.read()
-coffeeshops = json.loads(file_contents)
-# coffeeshops_d = coffeeshops[0:5]
-list_coffeshops = []
-question = input("Где вы находитесь?: ")
-coords = fetch_coordinates(apikey, question)
-nearest_coffee = min(
-    coffeeshops,
-    key=lambda coffee: distance(
-        coords[::-1], coffee["geoData"]["coordinates"][::-1]
-    ).km,
-)
+        m.save("index.html")
 
 
-min_distance = distance(coords[::-1], nearest_coffee["geoData"]["coordinates"][::-1]).km
-print(coords)
-print("distance: ", min_distance)
-pprint(nearest_coffee["Name"])
-pprint(nearest_coffee["Longitude_WGS84"])
-pprint(nearest_coffee["Latitude_WGS84"])
-pprint(coffeeshops)
+if __name__ == "__main__":
+    main()
