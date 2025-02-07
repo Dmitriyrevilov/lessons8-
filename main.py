@@ -37,9 +37,7 @@ def main():
     coffeeshops = json.loads(file_contents)
     question = input("Где вы находитесь?: ")
     coords = fetch_coordinates(APIKEY, question)
-
     m = folium.Map(location=coords[::-1], zoom_start=12)
-
     nearest_coffee = sorted(
         coffeeshops,
         key=lambda coffee: distance(
