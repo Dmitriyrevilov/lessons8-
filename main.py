@@ -31,12 +31,12 @@ def fetch_coordinates(apikey, address):
 
 def main():
     load_dotenv()
-    APIKEY = os.getenv("APIKEY")
+    apikey = os.getenv("APIKEY")
     with open("coffee.json", "r", encoding="CP1251") as coffee:
         file_contents = coffee.read()
     coffeeshops = json.loads(file_contents)
     question = input("Где вы находитесь?: ")
-    coords = fetch_coordinates(APIKEY, question)
+    coords = fetch_coordinates(apikey, question)
     m = folium.Map(location=coords[::-1], zoom_start=12)
     nearest_coffee = sorted(
         coffeeshops,
